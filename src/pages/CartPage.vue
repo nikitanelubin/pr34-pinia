@@ -4,7 +4,7 @@
 
     <div class="cart-summary">
       <!-- count и sum - геттеры из store, пересчитываются сами -->
-      <p><strong>Товаров:</strong> {{ cartStore.count }}</p>
+      <p><strong>Товаров:</strong> {{ cartStore.count }} из {{ MAX_ITEMS }}</p>
       <p><strong>Итого:</strong> {{ cartStore.sum }} ₽</p>
     </div>
 
@@ -33,7 +33,7 @@
 </template>
 
 <script setup>
-import { useCartStore } from '../stores/cart.js'
+import { useCartStore, MAX_ITEMS } from '../stores/cart.js'
 
 const cartStore = useCartStore()
 
