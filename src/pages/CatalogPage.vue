@@ -60,9 +60,11 @@ const isFavorite = (id) => {
   border-radius: 6px;
 }
 
-/* vertical-align: middle - кнопки "В корзину" и сердечко стоят ровно на одной линии */
+/* одинаковая высота и vertical-align: middle - кнопки "В корзину" и сердечко
+   стоят ровно на одной линии (у символов ♡ и ♥ разная высота) */
 .btn-add,
 .btn-fav {
+  height: 34px;
   vertical-align: middle;
 }
 
