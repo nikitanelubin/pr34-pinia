@@ -4,10 +4,33 @@ import { defineStore } from 'pinia'
 // export - чтобы показать это число на странице корзины
 export const MAX_ITEMS = 10
 
+// ===== Типизация =====
+// TypeScript в проекте нет, поэтому типы описаны специальными комментариями JSDoc (/** ... */).
+// Работу кода они не меняют, но редактор (VS Code) по ним понимает, какие поля есть
+// у товара и какие параметры у actions, и подсказывает их при наборе.
+
+/**
+ * Товар в корзине
+ * @typedef {Object} CartItem
+ * @property {number} id - номер товара
+ * @property {string} name - название
+ * @property {number} price - цена за 1 штуку
+ * @property {number} quantity - количество
+ */
+
+/**
+ * Состояние корзины (state)
+ * @typedef {Object} CartState
+ * @property {CartItem[]} items - товары в корзине
+ * @property {string} warning - текст предупреждения
+ * @property {CartItem[][]} history - копии корзины для кнопки «Отменить»
+ */
+
 // defineStore создаёт хранилище. 'cart' - его имя (видно в Vue DevTools).
 // useCartStore - функция, через которую компоненты получают это хранилище
 export const useCartStore = defineStore('cart', {
   // state - данные хранилища. Это функция, которая возвращает объект
+  /** @returns {CartState} */
   state: () => ({
     // при запуске берём корзину из localStorage.
     // JSON.parse превращает текст обратно в массив, а если там пусто - берём []
@@ -30,6 +53,7 @@ export const useCartStore = defineStore('cart', {
 
   // actions - функции, которые меняют state. Все изменения корзины - только через них
   actions: {
+    /** @param {{ id: number, name: string, price: number }} product - товар из каталога */
     addToCart(product) {
       // проверка лимита: корзина уже полная - показываем предупреждение и не добавляем
       if (this.count >= MAX_ITEMS) {
@@ -54,6 +78,7 @@ export const useCartStore = defineStore('cart', {
       this.saveToLocalStorage()
     },
 
+    /** @param {number} id - номер товара */
     removeFromCart(id) {
       this.warning = ''
       this.saveHistory()
@@ -69,7 +94,10 @@ export const useCartStore = defineStore('cart', {
       this.saveToLocalStorage()
     },
 
-    // delta: +1 - увеличить количество, -1 - уменьшить
+    /**
+     * @param {number} id - номер товара
+     * @param {number} delta - +1 увеличить количество, -1 уменьшить
+     */
     updateQuantity(id, delta) {
       const item = this.items.find((i) => i.id === id)
       if (!item) return
