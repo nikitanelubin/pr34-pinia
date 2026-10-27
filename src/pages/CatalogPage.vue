@@ -8,6 +8,14 @@
         <h3>{{ product.name }}</h3>
         <p>{{ product.price }} ₽</p>
         <button @click="addToCart(product)" class="btn-add">В корзину</button>
+        <!-- сердечко: закрашенное, если товар в избранном -->
+        <button
+          @click="favoritesStore.toggleFavorite(product.id)"
+          class="btn-fav"
+          :class="{ active: isFavorite(product.id) }"
+        >
+          {{ isFavorite(product.id) ? '♥' : '♡' }}
+        </button>
       </div>
     </div>
   </div>
@@ -15,9 +23,11 @@
 
 <script setup>
 import { useCartStore } from '../stores/cart.js'
+import { useFavoritesStore } from '../stores/favorites.js'
 
 // получаем хранилище корзины - то же самое, что и на странице корзины
 const cartStore = useCartStore()
+const favoritesStore = useFavoritesStore()
 
 const products = [
   { id: 1, name: 'Ноутбук', price: 75000 },
@@ -29,6 +39,11 @@ const products = [
 // компонент сам корзину не меняет - только вызывает action из store
 const addToCart = (product) => {
   cartStore.addToCart(product)
+}
+
+// includes проверяет, есть ли id в массиве избранного
+const isFavorite = (id) => {
+  return favoritesStore.ids.includes(id)
 }
 </script>
 
@@ -56,5 +71,21 @@ const addToCart = (product) => {
 
 .btn-add:hover {
   background: #3aa875;
+}
+
+.btn-fav {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.7rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  background: white;
+  color: #e91e63;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+.btn-fav.active {
+  border-color: #e91e63;
+  background: #fce4ec;
 }
 </style>
