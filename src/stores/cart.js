@@ -13,7 +13,9 @@ export const useCartStore = defineStore('cart', {
     // JSON.parse превращает текст обратно в массив, а если там пусто - берём []
     items: JSON.parse(localStorage.getItem('cart_items')) || [],
     // текст предупреждения (пустая строка - предупреждения нет)
-    warning: ''
+    warning: '',
+    // история для кнопки "Отменить": копии корзины до каждого изменения
+    history: []
   }),
 
   // getters - вычисляемые значения (как computed), всегда актуальные
@@ -21,7 +23,9 @@ export const useCartStore = defineStore('cart', {
     // Пересчитываем количество и сумму на основе items.
     // reduce проходит по всем товарам и накапливает одно число (начиная с 0)
     count: (state) => state.items.reduce((sum, item) => sum + item.quantity, 0),
-    sum: (state) => state.items.reduce((total, item) => total + item.price * item.quantity, 0)
+    sum: (state) => state.items.reduce((total, item) => total + item.price * item.quantity, 0),
+    // можно ли что-то отменить (есть ли что-нибудь в истории)
+    canUndo: (state) => state.history.length > 0
   },
 
   // actions - функции, которые меняют state. Все изменения корзины - только через них
@@ -33,6 +37,7 @@ export const useCartStore = defineStore('cart', {
         return
       }
       this.warning = ''
+      this.saveHistory()
 
       // ищем, есть ли уже такой товар в корзине
       const existing = this.items.find((i) => i.id === product.id)
@@ -51,6 +56,7 @@ export const useCartStore = defineStore('cart', {
 
     removeFromCart(id) {
       this.warning = ''
+      this.saveHistory()
       // filter оставляет все товары, кроме товара с этим id
       this.items = this.items.filter((i) => i.id !== id)
       this.saveToLocalStorage()
@@ -58,6 +64,7 @@ export const useCartStore = defineStore('cart', {
 
     clearCart() {
       this.warning = ''
+      this.saveHistory()
       this.items = []
       this.saveToLocalStorage()
     },
@@ -73,13 +80,33 @@ export const useCartStore = defineStore('cart', {
         return
       }
       this.warning = ''
+      this.saveHistory()
 
       item.quantity += delta
       if (item.quantity <= 0) {
-        this.removeFromCart(id) // удаляем, если 0
-      } else {
-        this.saveToLocalStorage()
+        // удаляем, если 0. Здесь не вызываем removeFromCart,
+        // иначе в историю запишется лишний шаг и "Отменить" придётся нажимать дважды
+        this.items = this.items.filter((i) => i.id !== id)
       }
+      this.saveToLocalStorage()
+    },
+
+    // Запомнить, какой была корзина ДО изменения
+    saveHistory() {
+      // JSON.parse(JSON.stringify(...)) делает полную копию массива.
+      // Без копии в истории лежала бы ссылка на тот же самый массив,
+      // и он менялся бы вместе с корзиной
+      const copy = JSON.parse(JSON.stringify(this.items))
+      this.history.push(copy)
+    },
+
+    // Отмена последнего действия (добавить / удалить / изменить количество / очистить)
+    undo() {
+      if (this.history.length === 0) return
+      // pop() достаёт последний элемент массива и удаляет его из истории
+      this.items = this.history.pop()
+      this.warning = ''
+      this.saveToLocalStorage()
     },
 
     saveToLocalStorage() {

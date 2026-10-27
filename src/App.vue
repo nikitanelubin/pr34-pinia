@@ -6,9 +6,17 @@
       <RouterLink to="/cart" class="nav-link">Корзина ({{ cartStore.count }})</RouterLink>
     </nav>
 
-    <!-- счётчик из второго store. Он реактивный: меняется сам,
-         как только на любой странице нажали на сердечко -->
-    <span class="favorites">♥ Избранное: {{ favoritesStore.count }}</span>
+    <div class="header-right">
+      <!-- отмена последнего действия с корзиной.
+           :disabled - кнопка неактивна, если отменять нечего -->
+      <button class="btn-undo" :disabled="!cartStore.canUndo" @click="cartStore.undo()">
+        ↶ Отменить
+      </button>
+
+      <!-- счётчик из второго store. Он реактивный: меняется сам,
+           как только на любой странице нажали на сердечко -->
+      <span class="favorites">♥ Избранное: {{ favoritesStore.count }}</span>
+    </div>
   </header>
 
   <!-- предупреждение из store (например, о лимите корзины) - видно на любой странице -->
@@ -34,6 +42,25 @@ const favoritesStore = useFavoritesStore()
   align-items: center;
   padding: 1rem 20px;
   border-bottom: 1px solid #eee;
+}
+
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.btn-undo {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: white;
+  cursor: pointer;
+}
+
+.btn-undo:disabled {
+  color: #aaa;
+  cursor: not-allowed;
 }
 
 .favorites {
