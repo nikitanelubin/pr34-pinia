@@ -24,9 +24,10 @@
 
     <p v-else>Корзина пуста.</p>
 
-    <button v-if="cartStore.items.length" @click="clearCart" class="btn-danger">
-      Очистить корзину
-    </button>
+    <div v-if="cartStore.items.length" class="cart-buttons">
+      <button @click="downloadCart" class="btn-download">Скачать корзину</button>
+      <button @click="clearCart" class="btn-danger">Очистить корзину</button>
+    </div>
 
     <p class="note">Обнови страницу - состояние сохранится благодаря localStorage.</p>
   </div>
@@ -47,6 +48,33 @@ const updateQuantity = (id, delta) => {
 
 const clearCart = () => {
   cartStore.clearCart()
+}
+
+// Экспорт корзины в файл cart.json
+const downloadCart = () => {
+  const data = {
+    items: cartStore.items,
+    count: cartStore.count,
+    sum: cartStore.sum
+  }
+
+  // JSON.stringify превращает объект в текст. null, 2 - отступы в 2 пробела, чтобы файл был читаемым
+  const json = JSON.stringify(data, null, 2)
+
+  // Blob - "файл в памяти браузера". Делаем из текста файл типа JSON
+  const blob = new Blob([json], { type: 'application/json' })
+  // createObjectURL даёт временную ссылку на этот файл
+  const url = URL.createObjectURL(blob)
+
+  // создаём ссылку <a href="..." download="cart.json"> и "нажимаем" на неё из кода -
+  // атрибут download говорит браузеру скачать файл, а не открыть его
+  const link = document.createElement('a')
+  link.href = url
+  link.download = 'cart.json'
+  link.click()
+
+  // временная ссылка больше не нужна - освобождаем память
+  URL.revokeObjectURL(url)
 }
 </script>
 
@@ -92,6 +120,20 @@ const clearCart = () => {
   border: none;
   background: #ffebee;
   color: #c62828;
+}
+
+.cart-buttons {
+  display: flex;
+  gap: 10px;
+}
+
+.btn-download {
+  padding: 0.7rem 1.2rem;
+  border: none;
+  border-radius: 4px;
+  background: #42b983;
+  color: white;
+  cursor: pointer;
 }
 
 .btn-danger {
